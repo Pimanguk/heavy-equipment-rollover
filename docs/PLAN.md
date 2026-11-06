@@ -1,6 +1,9 @@
 # 종합 기획서 — CAT 320 경사지 작업 전 전복 위험 판정 서비스
 
 작성: 매니저(메인 세션) · 2026-11-06 · 근거 문서 4개를 대조해 종합
+
+> **2026-11-06 갱신: 팀원 three.js 시뮬레이터(`web/`)를 본 제품으로 전환.** 바뀌는 점은 [`CHANGES.md`](CHANGES.md) 참고.
+> D3(렌더러)는 three.js로 확정. 부품 질량 출처(팀 시트 02 vs CAT 공식)가 새 결정 사항.
 - 물리·검증: `research/physics_validation.md`
 - 제원·데이터: `research/cat320_data.md`
 - 시각화 구조: `design/architecture.md`

@@ -1,0 +1,51 @@
+{
+ "lower_LxWxH": [
+  4.45,
+  2.98,
+  0.886
+ ],
+ "lower_sheet": [
+  4.45,
+  2.98,
+  0.9
+ ],
+ "upper_LxWxH": [
+  4.8,
+  2.7,
+  2.5
+ ],
+ "upper_sheet": [
+  4.8,
+  2.7,
+  2.5
+ ],
+ "boom_pin_to_pin_m": 5.68,
+ "boom_sheet": 5.7,
+ "stick_pin_to_pin_m": 2.9,
+ "stick_sheet": 2.9,
+ "bucket_LxW": [
+  1.57,
+  0.95
+ ],
+ "bucket_sheet": [
+  1.57,
+  0.95
+ ],
+ "boom_WxH_scale": [
+  1.298,
+  1.0
+ ],
+ "stick_WxH_scale": [
+  1.79,
+  1.443
+ ],
+ "total_mass_kg": 22600,
+ "model_rest_deg": {
+  "boom": 56.342807310782966,
+  "arm": -107.16842020319632,
+  "bucket": 0.0,
+  "swing": 0.0
+ },
+ "frames": 2063,
+ "seconds": 86.0
+}
