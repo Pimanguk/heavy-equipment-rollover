@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>굴착기 전복 예방 안전교육</title>
+<style>
+:root{--bg:#080f1c;--panel:#111d2d;--panel2:#17263a;--yellow:#ffd447;--red:#f06a62;--muted:#9aabc0;--white:#f4f7fb}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Pretendard","Noto Sans KR",Arial,sans-serif;color:var(--white);background:radial-gradient(ellipse at 75% 15%,#1b3550 0,transparent 38%),linear-gradient(135deg,#080f1c,#101c2c 65%,#09111e)}
+.wrap{width:min(1120px,calc(100% - 40px));margin:auto}.top{display:flex;justify-content:space-between;align-items:center;padding:28px 0;border-bottom:1px solid #ffffff18}.brand{font-weight:900;letter-spacing:2px;font-size:14px}.brand b{color:var(--yellow)}.tag{font-size:11px;letter-spacing:2px;color:var(--muted)}
+main{display:grid;grid-template-columns:1.08fr .92fr;gap:48px;align-items:center;padding:76px 0 60px}.eyebrow{color:var(--yellow);font-size:12px;font-weight:800;letter-spacing:3px;margin-bottom:18px}.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid #ffd44755;color:var(--yellow);border-radius:30px;padding:8px 13px;font-size:11px;letter-spacing:1px;margin-bottom:22px}h1{font-size:clamp(36px,5vw,60px);line-height:1.18;letter-spacing:-2px;margin:0 0 20px;font-weight:900}h1 span{color:var(--yellow)}.intro{color:#b8c5d5;line-height:1.85;font-size:16px;max-width:570px;margin:0 0 30px}.actions{display:flex;gap:12px;flex-wrap:wrap}.btn{border:0;border-radius:12px;padding:16px 22px;font-size:15px;font-weight:900;cursor:pointer;transition:.2s}.btn:hover{transform:translateY(-2px);filter:brightness(1.08)}.primary{background:var(--yellow);color:#18202b;box-shadow:0 10px 28px #ffd44726}.secondary{background:#f06a6218;color:#ff928b;border:1px solid #f06a6255}.arrow{margin-left:24px;font-size:18px}
+.machine{position:relative;min-height:390px;border:1px solid #ffffff17;border-radius:28px;background:linear-gradient(145deg,#1b2d43,#0c1726);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 28px 70px #0006}.machine:before,.machine:after{content:"";position:absolute;border:1px solid #ffd44722;border-radius:50%;width:360px;height:360px}.machine:after{width:470px;height:470px}.glow{position:absolute;width:220px;height:220px;background:#ffd44714;filter:blur(45px);border-radius:50%}.excavator{width:min(90%,470px);z-index:1;filter:drop-shadow(0 18px 15px #0008)}.machine-label{position:absolute;bottom:22px;left:24px;font-size:10px;letter-spacing:2px;color:#91a4ba}
+.goals{padding:24px 0 62px}.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px}.section-head h2{font-size:20px;margin:0}.section-head p{color:var(--muted);font-size:12px;margin:0}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:#111d2dcc;border:1px solid #ffffff13;border-radius:16px;padding:22px}.num{font-size:11px;color:var(--yellow);letter-spacing:2px;font-weight:900}.card h3{font-size:17px;margin:12px 0 8px}.card p{font-size:13px;color:var(--muted);line-height:1.7;margin:0}
+footer{border-top:1px solid #ffffff18;padding:22px 0 30px;display:flex;justify-content:space-between;gap:12px;color:#73869d;font-size:10px;letter-spacing:1.5px}
+@media(max-width:760px){.top{padding:20px 0}.tag{display:none}main{grid-template-columns:1fr;gap:28px;padding:48px 0 36px}.machine{min-height:270px;grid-row:1}.machine:before{width:250px;height:250px}.machine:after{width:330px;height:330px}.goals{padding-bottom:38px}.cards{grid-template-columns:1fr}.section-head{align-items:start;gap:8px;flex-direction:column}footer{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div class="brand">HEAVY EQUIPMENT <b>SAFETY</b></div><div class="tag">SAFETY TRAINING · CAT 320</div></header>
+<main>
+<section>
+<div class="pill">● &nbsp; PRE-OPERATION SAFETY PROGRAM</div>
+<div class="eyebrow">EXCAVATOR SAFETY EDUCATION</div>
+<h1>굴착기 전복 예방<br><span>안전교육 시뮬레이터</span></h1>
+<p class="intro">포크레인(CAT 320)이 비탈길에서 작업할 때, 장비가 넘어질 위험은 없을까요?<br>작업을 시작하기 전에 지형과 장비의 상태를 확인하고, 안전한 작업 방법을 시뮬레이션으로 익혀보세요.</p>
+<div class="actions">
+<button class="btn primary" onclick="startTraining()">학습 시작 <span class="arrow">→</span></button>
+<button class="btn secondary" onclick="startTest()">진단 테스트 <span class="arrow">→</span></button>
+</div>
+</section>
+<section class="machine" aria-label="굴착기 일러스트">
+<div class="glow"></div>
+<svg class="excavator" viewBox="0 0 650 450" role="img" aria-label="경사면 위 굴착기 그림" fill="none"
+     xmlns="http://www.w3.org/2000/svg">
+
+    <!-- 경사면 -->
+    <path d="M0 390 L650 280 L650 450 L0 450Z"
+          fill="#293b46"/>
+
+    <path d="M0 390 L650 280"
+          stroke="#71808a" stroke-width="3"/>
+
+    <!-- 굴착기 암 -->
+    <path d="M335 190 L415 95 L495 120 L535 210"
+          stroke="#ffc928" stroke-width="28"
+          stroke-linecap="round" stroke-linejoin="round"/>
+
+    <path d="M335 190 L415 95 L495 120 L535 210"
+          stroke="#d99e12" stroke-width="5"
+          stroke-linecap="round"/>
+
+    <!-- 버킷 -->
+    <path d="M520 205 L560 205 L575 250 L545 265 L520 235Z"
+          fill="#ffc928" stroke="#b9810a" stroke-width="5"/>
+
+    <!-- 본체 -->
+    <path d="M190 215 L380 215 L410 315 L160 315Z"
+          fill="#ffc928"/>
+
+    <!-- 운전석 -->
+    <path d="M210 135 L305 135 L330 215 L190 215Z"
+          fill="#d9a319" stroke="#ffc928" stroke-width="5"/>
+
+    <path d="M220 150 L290 150 L308 205 L205 205Z"
+          fill="#243b4b"/>
+
+    <!-- 궤도 -->
+    <rect x="135" y="300" width="290" height="75"
+          rx="35" fill="#171f27"
+          stroke="#73808a" stroke-width="6"/>
+
+    <rect x="155" y="315" width="250" height="45"
+          rx="22" fill="#35434d"/>
+
+    <!-- 궤도 바퀴 -->
+    <g fill="#19232d" stroke="#89939a" stroke-width="4">
+        <circle cx="185" cy="337" r="19"/>
+        <circle cx="250" cy="337" r="19"/>
+        <circle cx="315" cy="337" r="19"/>
+        <circle cx="380" cy="337" r="19"/>
+    </g>
+
+    <!-- 경고 표시 -->
+    <path d="M475 310 L510 250 L545 310Z"
+          fill="#ffc928"/>
+    <text x="510" y="299" font-size="35"
+          text-anchor="middle" fill="#18232e"
+          font-weight="bold">!</text>
+
+</svg>
+<div class="machine-label">CAT 320 / EXCAVATOR TRAINING MODEL</div>
+</section>
+</main>
+<section class="goals">
+<div class="section-head"><h2>이번 교육의 핵심 목표</h2><p>3 CORE LEARNING OBJECTIVES</p></div>
+<div class="cards">
+<article class="card"><div class="num">01 / TERRAIN</div><h3>경사면 주행 안전</h3><p>경사 방향과 지면 상태를 확인하고 안전한 이동 원칙을 익힙니다.</p></article>
+<article class="card"><div class="num">02 / RISK CHECK</div><h3>전도 위험 판단</h3><p>지반 붕괴, 과도한 경사 등 전도 위험 신호를 파악합니다.</p></article>
+<article class="card"><div class="num">03 / OPERATION</div><h3>안전한 암 조작</h3><p>장비의 안정성을 고려한 부드럽고 안전한 조작 방법을 학습합니다.</p></article>
+</div>
+</section>
+<footer><span>EXCAVATOR SAFETY EDUCATION</span><span>안전한 작업, 안전한 현장</span></footer>
+</div>
+<script>
+function startTraining(){location.href="index.html";}
+function startTest(){location.href="test.html";}
+</script>
+</body>
+</html>
