@@ -85,7 +85,6 @@
 
   <h2>오르막 · 내리막길 (전방 설치)</h2>
   <div class="row"><b>경사 θ</b><input type="range" min="0" max="50" step="0.5" value="12" id="rampDeg"><div class="val"><input type="number" class="num" id="rampDegN" min="0" max="50" step="0.5" value="12"> °</div></div>
-  <div class="row"><b>경사율</b><span class="sub">tan θ × 100 (직접 입력 가능)</span><div class="val"><input type="number" class="num" id="rampGrade" min="0" max="119.2" step="1" value="21.3"> %</div></div>
   <div class="sub">전방 <b id="rampStart"></b> m에서 오르막 <b id="rampLen"></b> m → 평지 <b id="rampDeck"></b> m → 내리막 <b id="rampLen2"></b> m (오르막과 같은 각도) · <span id="rampDist"></span></div>
 
   <h2>표시 · 해석 옵션</h2>
@@ -431,12 +430,10 @@ function setup(){
   }
   $('vmaxkm').textContent = (P.travel.vmax*3.6).toFixed(1); $('amaxd').textContent = P.travel.amax.toFixed(1);
   $('rampStart').textContent = RAMP.x0.toFixed(1); $('rampLen').textContent = RAMP.len; $('rampLen2').textContent = RAMP.len; $('rampDeck').textContent = RAMP.deck;
-  // ramp slope: angle (deg) and grade (%) are linked; the slider, the angle field and the grade field always agree
+  // ramp slope: angle (deg); the slider and the angle field always agree
   const setRamp = deg => { RAMP.deg = clamp(deg, 0, RAMP_MAX_DEG); $('rampDeg').value = RAMP.deg; buildRamp(); return RAMP.deg; };
-  $('rampDeg').addEventListener('input', e => { setRamp(+e.target.value); $('rampDegN').value = RAMP.deg.toFixed(1); $('rampGrade').value = (Math.tan(deg(RAMP.deg))*100).toFixed(1); });
-  bindNumber($('rampDegN'), v => { setRamp(v); $('rampGrade').value = (Math.tan(deg(RAMP.deg))*100).toFixed(1); return RAMP.deg; }, () => RAMP.deg, 1);
-  bindNumber($('rampGrade'), v => { const d = setRamp(Math.atan(Math.max(v, 0)/100)*180/Math.PI); $('rampDegN').value = d.toFixed(1); return Math.tan(deg(d))*100; }, () => Math.tan(deg(RAMP.deg))*100, 1);
-  $('rampGrade').value = (Math.tan(deg(RAMP.deg))*100).toFixed(1);
+  $('rampDeg').addEventListener('input', e => { setRamp(+e.target.value); $('rampDegN').value = RAMP.deg.toFixed(1); });
+  bindNumber($('rampDegN'), v => { setRamp(v); return RAMP.deg; }, () => RAMP.deg, 1);
   // machine position along the line of travel (e.g. to park it on the slope or at the crest)
   bindNumber($('posN'), v => { drive.pos = v; drive.v = 0; drive.a = 0; return v; }, () => drive.pos, 2);
   // panel switches: control panel (left) and analysis panel (right) can be shown / hidden separately; H toggles both
