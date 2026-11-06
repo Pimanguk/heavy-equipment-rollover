@@ -629,6 +629,9 @@ try: _gm.blend_method = 'BLEND'
 except Exception: pass
 glb1 = f"{OUT}/web/excavator_1st.glb"
 export(glb1, interior=True)
+# standalone 1st-person .blend: cab interior + see-through glass, active camera = driver's eye camera
+sc.camera = bpy.data.objects["Int_Camera"]
+bpy.ops.wm.save_as_mainfile(filepath=f"{OUT}/Excavator_CAT320_1st.blend", copy=True)
 to_js = lambda v: [round(float(x), 4) for x in v]
 params = dict(
     sheet01=SHEET01, sheet02=SHEET02,

@@ -23,7 +23,7 @@ AX 챌린지 · AI콘텐츠공학 × 메카트로닉스공학과
 ## 폴더 구조
 | 경로 | 내용 |
 |---|---|
-| `web/` | **최종 시뮬레이터** (팀원 「최종파일 (진짜 최종2)」) — `index.html` + `model_data.js` |
+| `web/` | **최종 시뮬레이터** (팀원 「최종파일^^」, 찐 최종) — `index.html` + `model_data.js`, 안전교육 시작 화면 `home.html`, 진단 테스트 `test.html` |
 | `model/` | Blender 원본 모델·빌드 스크립트(`build_excavator_final.py`)·렌더 이미지 |
 | `presentation/` | 발표 대본(`발표대본.md`), 슬라이드용 사진·QR(`images/`), 팀원 PPT 초안 PDF |
 | `docs/` | 기획(`PLAN.md`), 변경 기록(`CHANGES.md`), PPT 수정안·제작 가이드, 조사 문서(`research/`, `design/`, `plan/`) |
