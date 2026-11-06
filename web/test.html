@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안전 지식 진단 테스트</title>
+<style>
+:root{--bg:#080f1c;--panel:#111d2d;--panel2:#192a40;--yellow:#ffd447;--red:#f06a62;--green:#67d6a0;--muted:#9aabc0;--white:#f4f7fb}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Pretendard","Noto Sans KR",Arial,sans-serif;color:var(--white);background:radial-gradient(ellipse at 80% 10%,#1b3550 0,transparent 38%),linear-gradient(135deg,#080f1c,#101c2c 65%,#09111e)}
+.wrap{width:min(850px,calc(100% - 36px));margin:auto}.top{display:flex;justify-content:space-between;align-items:center;padding:25px 0;border-bottom:1px solid #ffffff18}.brand{font-weight:900;letter-spacing:2px;font-size:13px}.brand b{color:var(--yellow)}.tag{font-size:10px;letter-spacing:2px;color:var(--muted)}
+main{padding:46px 0 60px}.back{border:0;background:transparent;color:#aab9ca;font-size:13px;cursor:pointer;padding:0;margin-bottom:30px}.back:hover{color:var(--yellow)}.eyebrow{font-size:11px;letter-spacing:3px;color:var(--yellow);font-weight:900;margin-bottom:12px}h1{font-size:clamp(30px,5vw,42px);margin:0 0 10px;letter-spacing:-1.5px}.sub{color:var(--muted);font-size:14px;line-height:1.7;margin:0 0 28px}
+.panel{background:#111d2de8;border:1px solid #ffffff18;border-radius:22px;padding:clamp(20px,4vw,34px);box-shadow:0 25px 60px #0004}.meta{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:12px;color:var(--muted);margin-bottom:14px}.meta strong{color:var(--yellow);letter-spacing:1px}.progress{height:6px;border-radius:10px;background:#29394d;overflow:hidden;margin-bottom:30px}.bar{height:100%;width:20%;background:var(--yellow);border-radius:10px;transition:width .25s}
+.category{display:inline-block;border:1px solid #ffd44755;color:var(--yellow);font-size:11px;padding:7px 11px;border-radius:20px;margin-bottom:16px}.question{font-size:clamp(19px,3vw,24px);line-height:1.55;font-weight:800;margin:0 0 24px}.options{display:grid;gap:11px}.option{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:#18283c;border:1px solid #ffffff16;border-radius:13px;padding:15px;color:var(--white);font-size:14px;line-height:1.5;cursor:pointer;transition:.18s}.option:hover:not(:disabled){border-color:#ffd44799;background:#20344c}.option:disabled{cursor:default}.letter{width:29px;height:29px;flex:0 0 29px;border-radius:9px;display:grid;place-items:center;background:#2b3d52;color:#d9e2ec;font-weight:900;font-size:12px}.option.correct{border-color:var(--green);background:#16372f}.option.correct .letter{background:var(--green);color:#092219}.option.wrong{border-color:var(--red);background:#3a2429}.option.wrong .letter{background:var(--red);color:#2a1111}
+.feedback{display:none;margin-top:18px;padding:16px;border-radius:12px;background:#0b1725;border:1px solid #ffffff18;line-height:1.7;font-size:13px;color:#c6d2df}.feedback.show{display:block}.feedback strong{display:block;margin-bottom:5px;font-size:14px}.feedback.good strong{color:var(--green)}.feedback.bad strong{color:#ff8b83}
+.controls{display:flex;justify-content:flex-end;margin-top:22px}.next,.restart{border:0;border-radius:11px;background:var(--yellow);color:#17202b;padding:14px 22px;font-weight:900;cursor:pointer}.next:disabled{opacity:.35;cursor:not-allowed}
+.result{display:none;text-align:center;padding:18px 0 8px}.result.show{display:block}.score{font-size:68px;line-height:1.1;color:var(--yellow);font-weight:900;margin:12px 0}.result h2{font-size:25px;margin:12px 0}.result p{color:var(--muted);line-height:1.7}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:26px 0}.stat{background:#18283c;border-radius:13px;padding:17px 8px}.stat b{display:block;font-size:23px;margin-bottom:5px}.stat span{font-size:11px;color:var(--muted)}.result-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.home-btn{background:#24364b;color:#e5edf5;border:1px solid #ffffff1c;border-radius:11px;padding:14px 20px;font-weight:800;cursor:pointer}
+.notice{font-size:11px;color:#75879c;line-height:1.7;text-align:center;margin-top:22px}
+@media(max-width:560px){.top{padding:19px 0}.tag{display:none}main{padding-top:32px}.stats{gap:7px}.stat{padding:14px 4px}.stat b{font-size:20px}.option{padding:13px;font-size:13px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div class="brand">HEAVY EQUIPMENT <b>SAFETY</b></div><div class="tag">SAFETY DIAGNOSTIC TEST</div></header>
+<main>
+<button class="back" onclick="goHome()">← 홈으로 돌아가기</button>
+<div class="eyebrow">PRE-TRAINING TEST</div>
+<h1>안전 지식 진단 테스트</h1>
+<p class="sub">굴착기 작업 전 안전 지식을 확인해 보세요.<br>총 5문제이며, 각 문항의 정답을 선택하면 해설을 확인할 수 있습니다.</p>
+<section class="panel" id="quizPanel">
+<div class="meta"><span id="questionCount">QUESTION 01 / 05</span><strong id="progressText">20% COMPLETE</strong></div>
+<div class="progress"><div class="bar" id="progressBar"></div></div>
+<div id="questionArea">
+<div class="category" id="category"></div>
+<h2 class="question" id="question"></h2>
+<div class="options" id="options"></div>
+<div class="feedback" id="feedback" aria-live="polite"></div>
+<div class="controls"><button class="next" id="nextBtn" onclick="nextQuestion()" disabled>다음 문제 →</button></div>
+</div>
+<div class="result" id="result">
+<div class="eyebrow">TEST COMPLETE</div>
+<h2 id="resultTitle">진단 테스트 완료!</h2>
+<div class="score" id="score">100점</div>
+<p id="resultMessage"></p>
+<div class="stats">
+<div class="stat"><b id="correctCount">5</b><span>정답</span></div>
+<div class="stat"><b id="wrongCount">0</b><span>오답</span></div>
+<div class="stat"><b id="accuracy">100%</b><span>정답률</span></div>
+</div>
+<div class="result-actions"><button class="restart" onclick="restartQuiz()">다시 테스트하기</button><button class="home-btn" onclick="goHome()">홈으로</button></div>
+</div>
+</section>
+<p class="notice">※ 본 테스트는 일반적인 안전교육용 예시입니다. 실제 작업 시에는 장비 제조사의 매뉴얼과 현장 안전관리자의 지침을 우선으로 따르세요.</p>
+</main>
+</div>
+<script>
+const questions=[
+{category:"01 · 전복 위험 작업 조건",question:"다음 중 굴착기 전복 위험을 가장 높이는 작업 조건은 무엇인가?",options:["평탄한 지반에서 저속으로 이동하는 경우","버킷을 낮게 유지한 상태로 이동하는 경우","경사진 곳에서 암을 높게 들고 작업하는 경우","작업 장치를 접은 상태로 대기하는 경우"],answer:2,explanation:"경사진 곳에서 암을 높게 들면 무게중심이 높아지고 경사 방향으로 쏠려 전복 위험이 크게 높아집니다."},
+{category:"02 · 암 높이와 무게중심",question:"굴착기 운행 중 암(붐·암)을 과도하게 높게 들면 발생할 수 있는 위험은 무엇인가?",options:["연료가 절약된다.","작업 속도가 빨라진다.","무게중심이 높아져 전복 위험이 증가한다.","장비 수명이 연장된다."],answer:2,explanation:"붐·암을 높이 들수록 장비의 무게중심이 위로 올라가 작은 기울기나 충격에도 균형을 잃기 쉬워집니다."},
+{category:"03 · 작업 반경",question:"굴착기의 작업 장치를 최대 반경까지 뻗은 상태에서 작업할 경우 나타날 수 있는 위험은 무엇인가?",options:["시야가 넓어진다.","장비의 안정성이 향상된다.","작업 효율이 증가한다.","전복 위험이 증가한다."],answer:3,explanation:"작업 장치를 멀리 뻗을수록 하중이 장비 중심에서 멀어져 전도 모멘트가 커지므로 전복 위험이 증가합니다."},
+{category:"04 · 전복 예방 안전수칙",question:"다음 중 굴착기 전복 예방을 위한 안전수칙으로 가장 적절한 것은?",options:["이동 시 버킷을 가능한 높게 유지한다.","경사지에서 빠르게 선회한다.","작업 장치를 낮게 유지하며 이동한다.","장비 한계와 관계없이 작업한다."],answer:2,explanation:"이동할 때는 작업 장치를 낮게 유지해 무게중심을 낮추고, 경사지 급선회나 장비 한계를 넘는 작업은 피해야 합니다."},
+{category:"05 · 복합 위험 요인",question:"다음 설명 중 옳은 것은?",options:["전복 사고는 하나의 원인에 의해서만 발생한다.","평지에서는 항상 전복 위험이 없다.","경사지 작업, 높은 암 위치, 최대 작업 반경 등의 조건이 복합되면 전복 위험이 더욱 커진다.","과적과 전복은 관련이 없다."],answer:2,explanation:"전복 사고는 여러 위험 조건이 겹칠 때 더 쉽게 발생합니다. 평지에서도 지반 침하나 과적으로 전복될 수 있습니다."},
+];
+let currentQuestion=0,correctAnswers=0,answered=false;
+const letters=["A","B","C","D"];
+function showQuestion(){
+ const q=questions[currentQuestion];answered=false;
+ document.getElementById("questionCount").textContent=`QUESTION ${String(currentQuestion+1).padStart(2,"0")} / 05`;
+ document.getElementById("progressText").textContent=`${Math.round((currentQuestion+1)/questions.length*100)}% COMPLETE`;
+ document.getElementById("progressBar").style.width=`${(currentQuestion+1)/questions.length*100}%`;
+ document.getElementById("category").textContent=q.category;
+ document.getElementById("question").textContent=q.question;
+ const options=document.getElementById("options");options.innerHTML="";
+ q.options.forEach((option,index)=>{
+  const button=document.createElement("button");button.className="option";
+  button.innerHTML=`<span class="letter">${letters[index]}</span><span>${option}</span>`;
+  button.addEventListener("click",()=>selectAnswer(index));options.appendChild(button);
+ });
+ const feedback=document.getElementById("feedback");feedback.className="feedback";feedback.innerHTML="";
+ document.getElementById("nextBtn").disabled=true;
+ document.getElementById("nextBtn").textContent=currentQuestion===questions.length-1?"결과 확인 →":"다음 문제 →";
+}
+function selectAnswer(index){
+ if(answered)return;answered=true;
+ const q=questions[currentQuestion],buttons=[...document.querySelectorAll(".option")];
+ buttons.forEach((button,i)=>{button.disabled=true;if(i===q.answer)button.classList.add("correct");else if(i===index)button.classList.add("wrong");});
+ const isCorrect=index===q.answer;if(isCorrect)correctAnswers++;
+ const feedback=document.getElementById("feedback");feedback.className=`feedback show ${isCorrect?"good":"bad"}`;
+ feedback.innerHTML=`<strong>${isCorrect?"✓ 정답입니다!":"✕ 아쉽습니다. 정답을 확인해 보세요."}</strong>${q.explanation}`;
+ document.getElementById("nextBtn").disabled=false;
+}
+function nextQuestion(){if(!answered)return;if(currentQuestion<questions.length-1){currentQuestion++;showQuestion();}else showResult();}
+function showResult(){
+ document.getElementById("questionArea").style.display="none";
+ const result=document.getElementById("result");result.classList.add("show");
+ const accuracy=Math.round(correctAnswers/questions.length*100),score=correctAnswers*20;
+ document.getElementById("score").textContent=`${score}점`;
+ document.getElementById("correctCount").textContent=correctAnswers;
+ document.getElementById("wrongCount").textContent=questions.length-correctAnswers;
+ document.getElementById("accuracy").textContent=`${accuracy}%`;
+ document.getElementById("resultTitle").textContent=accuracy===100?"완벽합니다!":accuracy>=60?"좋은 출발입니다!":"안전 지식을 더 확인해 보세요.";
+ document.getElementById("resultMessage").textContent=accuracy===100?"모든 문제를 맞혔습니다. 안전 수칙을 잘 이해하고 있네요.":accuracy>=60?"잘하고 있습니다. 틀린 문항의 해설을 다시 확인해 보세요.":"기본 안전 수칙을 다시 학습한 뒤 재도전해 보세요.";
+ document.getElementById("progressText").textContent="100% COMPLETE";
+ document.getElementById("progressBar").style.width="100%";
+}
+function restartQuiz(){currentQuestion=0;correctAnswers=0;document.getElementById("questionArea").style.display="block";document.getElementById("result").classList.remove("show");showQuestion();}
+function goHome(){location.href="home.html";}
+showQuestion();
+</script>
+</body>
+</html>
