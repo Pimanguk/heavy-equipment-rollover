@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAT 320 굴착기 시뮬레이터</title>
+<style>
+  :root{--bg:#10151c;--panel:#18202bcc;--line:#2a3646;--tx:#e6edf5;--mut:#8da0b6;--ok:#3ecf8e;--warn:#f5b942;--bad:#ff5d5d;--acc:#f2a900}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:13px/1.45 system-ui,"Segoe UI","Malgun Gothic",sans-serif;overflow:hidden}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .panel{position:fixed;top:12px;left:12px;width:330px;max-height:calc(100% - 24px);overflow:auto;background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .panel.right{left:auto;right:12px;width:290px}
+  h1{font-size:15px;margin:0 0 2px}
+  h2{font-size:12px;margin:14px 0 6px;color:var(--mut);letter-spacing:.04em;text-transform:uppercase}
+  .sub{color:var(--mut);font-size:12px}
+  .row{display:grid;grid-template-columns:62px 1fr 74px;gap:8px;align-items:center;margin:7px 0}
+  .row b{font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--acc)}
+  .val{font-variant-numeric:tabular-nums;text-align:right}
+  .val small{color:var(--mut);display:block;font-size:11px}
+  .keys{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  button{background:#233044;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:7px 10px;font:inherit;cursor:pointer;user-select:none;touch-action:none}
+  button:active,button.on{background:var(--acc);color:#111}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  td,th{padding:3px 4px;border-bottom:1px solid var(--line);text-align:right}
+  td:first-child,th:first-child{text-align:left}
+  th{color:var(--mut);font-weight:500;font-size:11px}
+  .badge{display:inline-block;padding:2px 9px;border-radius:99px;font-weight:700;color:#111}
+  .big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  label{display:flex;gap:6px;align-items:center;margin:4px 0;color:var(--mut)}
+  #msg{position:fixed;inset:0;display:grid;place-items:center;color:var(--mut);font-size:15px;pointer-events:none}
+  #disclaimer{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);background:#000a;color:#ffd27a;padding:4px 12px;border-radius:6px;font-size:12px;pointer-events:none}
+  select{background:#233044;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font:inherit;width:100%}
+  @media (max-width:760px){.panel.right{display:none}.panel{width:calc(100% - 24px);max-height:46%}}
+</style>
+<script src="model_data.js"></script>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+"three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="msg">모델 불러오는 중…</div>
+
+<div class="panel">
+  <h1>CAT 320 굴착기 시뮬레이터</h1>
+  <div class="sub">시트 01·02·03 값 적용 · 각도 범위·최대속도·최대가속도 제한</div>
+
+  <h2>관절 (슬라이더 = 목표각)</h2>
+  <div id="joints"></div>
+  <div class="keys">
+    <button data-k="drive+">▲ 전진</button><button data-k="drive-">▼ 후진</button>
+    <button id="reset">초기자세</button>
+  </div>
+  <div class="sub" style="margin-top:6px">키보드: <b>Q/A</b> 붐 · <b>W/S</b> 암 · <b>E/D</b> 버킷 · <b>←/→</b> 선회 · <b>↑/↓</b> 주행</div>
+
+  <h2>주행</h2>
+  <div class="row"><b>위치</b><div id="posbar" class="sub">—</div><div class="val" id="posv">0.0 m</div></div>
+  <div class="row"><b>속도</b><div class="sub">최대 <span id="vmaxkm"></span> km/h · 가속 <span id="amaxd"></span> m/s²</div><div class="val" id="spdv">0.0 km/h</div></div>
+
+  <h2>경사면</h2>
+  <div class="row"><b>경사각</b><input type="range" id="sl_slope" min="0" max="35" step="0.5" value="0"><div class="val" id="v_slope">0.0°</div></div>
+  <div class="row"><b>방향</b><input type="range" id="sl_head" min="0" max="180" step="1" value="0"><div class="val" id="v_head">0°<small>0 정면·90 옆</small></div></div>
+  <div class="sub">방향 = 장비 정면 기준 오르막 쪽 (0 정면 오르막 · 90 왼쪽이 오르막 · 180 뒤가 오르막)</div>
+
+  <h2>표시</h2>
+  <label><input type="checkbox" id="showCoM" checked> 무게중심·지지면</label>
+  <label><input type="checkbox" id="showPivot"> 관절 피벗</label>
+  <div class="keys"><button id="camBtn">카메라: 3인칭 (V)</button></div>
+</div>
+<div id="disclaimer">근사 모델 · 실제 안전 판정 단독 사용 금지</div>
+
+<div class="panel right">
+  <h2 style="margin-top:0">전복 안정도 (정적)</h2>
+  <div class="big" id="margin">—</div>
+  <div class="sub">무게중심 지면 투영점 → 지지면 가장자리 최소거리</div>
+  <div style="margin-top:6px"><span class="badge" id="status">—</span></div>
+  <div class="sub" style="margin-top:6px">지지면: 롤러 중심거리 <span id="supL"></span> m × 트랙 중심간격 <span id="supG"></span> m</div>
+
+  <h2 id="partsTitle">부품 질량 (CAT 공식 무게표)</h2>
+  <select id="massSet">
+    <option value="cat" selected>CAT 공식 무게표 (Cat 320 사양서)</option>
+    <option value="sheet02">팀 시트 02 (비교용)</option>
+  </select>
+  <table id="parts"><thead><tr><th>부품</th><th>질량 kg</th><th>I kg·m²</th></tr></thead><tbody></tbody></table>
+  <div class="sub" style="margin-top:6px">합계 <b id="mass"></b> kg · 전체 무게중심 <span id="comv"></span></div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const P = window.EXCAVATOR_PARAMS;
+const deg = THREE.MathUtils.degToRad, clamp = THREE.MathUtils.clamp;
+const NAMES = {swing:'조인트', boom:'붐', arm:'암', bucket:'버킷'};
+const LABEL = {swing:'선회', boom:'붐', arm:'암', bucket:'버킷'};
+const KEYS = {KeyQ:['boom',1],KeyA:['boom',-1],KeyW:['arm',1],KeyS:['arm',-1],KeyE:['bucket',1],KeyD:['bucket',-1],
+              ArrowLeft:['swing',1],ArrowRight:['swing',-1],ArrowUp:['drive',1],ArrowDown:['drive',-1]};
+
+/* ---------- scene ---------- */
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled = true;
+document.body.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9db7d4);
+scene.fog = new THREE.Fog(0x9db7d4, 60, 160);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 400);
+camera.position.set(13, 8, 11);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(1.5, 1.6, 0); controls.maxPolarAngle = Math.PI*0.495; controls.update();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x6b5a45, 1.15));
+const sun = new THREE.DirectionalLight(0xffffff, 2.4);
+sun.position.set(12, 22, 9); sun.castShadow = true;
+Object.assign(sun.shadow.camera, {left:-22,right:22,top:22,bottom:-22,near:1,far:70});
+sun.shadow.mapSize.set(2048,2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04; scene.add(sun);
+// slope: ground + grid + machine live in `tilt`; camera, lights, background stay world-fixed
+const tilt = new THREE.Group(); scene.add(tilt);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(220,220), new THREE.MeshStandardMaterial({color:0x8b7355,roughness:1}));
+ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; tilt.add(ground);
+const grid = new THREE.GridHelper(120, 120, 0x00000033, 0x00000022); grid.position.y = 0.005;
+grid.material.transparent = true; grid.material.opacity = .25; tilt.add(grid);
+const slope = {deg:0, head:0};
+// hd = uphill direction from machine front (+x) toward its left (glTF -z). uphill u = (cos hd, 0, -sin hd).
+// rotate about k = u x Y = (sin hd, 0, cos hd) by +theta -> +u side rises.
+function setTilt(sDeg, hDeg){
+  slope.deg = sDeg; slope.head = hDeg;
+  const h = deg(hDeg);
+  tilt.quaternion.setFromAxisAngle(new THREE.Vector3(Math.sin(h), 0, Math.cos(h)), deg(sDeg));
+  tilt.updateMatrixWorld(true);
+}
+
+// 2D backdrop: far cylinder with a canvas-drawn sky + mountains + crane silhouettes (no external image)
+{
+  const cv = document.createElement('canvas'); cv.width = 2048; cv.height = 512;
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, hz = H*0.786;   // horizon row = world y 0
+  const sky = g.createLinearGradient(0,0,0,hz); sky.addColorStop(0,'#4f7fb3'); sky.addColorStop(1,'#9db7d4');
+  g.fillStyle = sky; g.fillRect(0,0,W,hz); g.fillStyle = '#9db7d4'; g.fillRect(0,hz,W,H-hz);
+  const ridge = (col, amp, base, seed) => {
+    g.fillStyle = col; g.beginPath(); g.moveTo(0,hz);
+    for (let x=0;x<=W;x+=8){ const t = x/W*Math.PI*2;
+      g.lineTo(x, hz - base - amp*(0.5+0.3*Math.sin(t*3+seed)+0.15*Math.sin(t*7+seed*2)+0.05*Math.sin(t*19+seed))); }
+    g.lineTo(W,hz); g.closePath(); g.fill();
+  };
+  ridge('#8aa2bd', 90, 20, 1.3); ridge('#6f849c', 60, 8, 4.1); ridge('#55667a', 30, 0, 2.2);
+  g.strokeStyle = g.fillStyle = '#3d4856'; g.lineWidth = 3;
+  for (const x0 of [380, 1240, 1800]){            // tower cranes
+    const top = hz-200; g.fillRect(x0-4, top, 8, 200);
+    g.beginPath(); g.moveTo(x0-60, top); g.lineTo(x0+200, top); g.stroke();
+    g.beginPath(); g.moveTo(x0, top-30); g.lineTo(x0+200, top); g.moveTo(x0, top-30); g.lineTo(x0-60, top); g.stroke();
+    g.fillRect(x0-60, top, 22, 14); g.beginPath(); g.moveTo(x0+150, top); g.lineTo(x0+150, top+70); g.stroke();
+  }
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = THREE.RepeatWrapping; tex.repeat.x = 2;
+  const bg = new THREE.Mesh(new THREE.CylinderGeometry(180,180,140,64,1,true),
+    new THREE.MeshBasicMaterial({map:tex, side:THREE.BackSide, fog:false, depthWrite:false}));
+  bg.position.y = 40; bg.renderOrder = -1; scene.add(bg);   // spans y -30..110, horizon at y 0
+}
+let fpMode = false, fpCam = null;
+function resize(){ renderer.setSize(innerWidth, innerHeight);
+  for (const c of [camera, fpCam]) if (c){ c.aspect = innerWidth/innerHeight; c.updateProjectionMatrix(); } }
+addEventListener('resize', resize); resize();
+
+/* ---------- model ---------- */
+const b64 = window.EXCAVATOR_GLB_BASE64, bin = atob(b64), buf = new Uint8Array(bin.length);
+for (let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i);
+let N = {};           // nodes by name
+let joints = {};      // joint state
+const drive = {pos:0, v:0, dir:0};
+const supportLines = new THREE.Group(), comMarker = new THREE.Group();
+
+new GLTFLoader().parse(buf.buffer, '', gltf => {
+  const model = gltf.scene; tilt.add(model);
+  model.traverse(o => { N[o.name] = o; if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
+  document.getElementById('msg').remove();
+  setup();
+}, err => { document.getElementById('msg').textContent = '모델 로드 실패: ' + err; });
+
+function setup(){
+  const root = N['Excavator_Root'];
+  const pivots = {swing:N['Pivot_Swing'], boom:N['Pivot_Boom'], arm:N['Pivot_Stick'], bucket:N['Pivot_Bucket']};
+  // joint state from sheet 03
+  for (const j of Object.keys(P.sheet03)){
+    const s = P.sheet03[j];
+    joints[j] = {node:pivots[j], min:s.min, max:s.max, vmax:s.vmax, amax:s.amax, pos:s.init, v:0, target:s.init, held:0};
+  }
+  // controls UI
+  const jp = document.getElementById('joints');
+  for (const j of ['boom','arm','bucket','swing']){
+    const s = joints[j];
+    const row = document.createElement('div'); row.className='row';
+    row.innerHTML = `<b>${LABEL[j]}</b><input type="range" min="${s.min}" max="${s.max}" step="0.5" value="${s.target}" id="sl_${j}">
+      <div class="val" id="v_${j}">0°<small>${s.min}…${s.max}°</small></div>`;
+    jp.appendChild(row);
+    row.querySelector('input').addEventListener('input', e => { s.target = +e.target.value; });
+  }
+  document.getElementById('vmaxkm').textContent = (P.travel.vmax*3.6).toFixed(1);
+  document.getElementById('amaxd').textContent = P.travel.amax.toFixed(1);
+  document.getElementById('supL').textContent = P.support.length;
+  document.getElementById('supG').textContent = P.support.gauge;
+  // mass sets: team sheet 02 (default) / CAT official component weights
+  // [공식] Cat 320 spec sheet "Major Component Weights"; upper [추정 보정] so the sum = 22,600 kg operating weight
+  const MASS_SETS = {
+    sheet02: Object.fromEntries(Object.entries(P.sheet02).map(([k,d]) => [k, d.mass])),
+    cat: {bucket:880, stick:1300, boom:2050, upper:10610, lower:7760},
+  };
+  let massKey = 'cat', MASS = MASS_SETS.cat, MTOT = 0;   // default = CAT official (user decision)
+  const PN = {bucket:'버킷', stick:'암', boom:'붐', upper:'회전몸체', lower:'하부 주행체'};
+  function renderParts(){
+    const tb = document.querySelector('#parts tbody'); tb.innerHTML = ''; MTOT = 0;
+    for (const k of ['bucket','stick','boom','upper','lower']){
+      MTOT += MASS[k];
+      const I = massKey === 'sheet02' ? Math.round(P.sheet02[k].I).toLocaleString() : '—';
+      tb.insertAdjacentHTML('beforeend', `<tr><td>${PN[k]}</td><td>${MASS[k].toLocaleString()}</td><td>${I}</td></tr>`);
+    }
+    document.getElementById('mass').textContent = MTOT.toLocaleString();
+    document.getElementById('partsTitle').textContent = massKey === 'cat' ? '부품 질량 (CAT 공식 무게표)' : '부품 질량·관성 (팀 시트 02 · 비교용)';
+  }
+  renderParts();
+  document.getElementById('massSet').onchange = e => { massKey = e.target.value; MASS = MASS_SETS[massKey]; renderParts(); };
+
+  // slope sliders
+  const slS = document.getElementById('sl_slope'), slH = document.getElementById('sl_head');
+  const onSlope = () => { setTilt(+slS.value, +slH.value);
+    document.getElementById('v_slope').textContent = slope.deg.toFixed(1) + '°';
+    document.getElementById('v_head').innerHTML = `${slope.head}°<small>0 정면·90 옆</small>`; };
+  slS.oninput = slH.oninput = onSlope;
+
+  // pivot helpers
+  const pivHelpers = new THREE.Group();
+  for (const k of ['Pivot_Swing','Pivot_Boom','Pivot_Stick','Pivot_Bucket']){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(.14), new THREE.MeshBasicMaterial({color:0x00e0ff,depthTest:false}));
+    m.renderOrder = 10; N[k].add(m); pivHelpers.add(m);
+  }
+  document.getElementById('showPivot').onchange = e => pivHelpers.children.forEach(m => m.visible = e.target.checked);
+  pivHelpers.children.forEach(m => m.visible = false);
+
+  // support polygon (machine frame; glTF z = -blender y)
+  const sp = P.support, hx = sp.length/2, hz = sp.gauge/2;
+  const pts = [[-hx,-hz],[hx,-hz],[hx,hz],[-hx,hz]].map(([x,z]) => new THREE.Vector3(x,0.03,z));
+  const loop = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color:0xffffff}));
+  // markers live in root-local frame (they tilt and drive with the machine)
+  supportLines.add(loop); root.add(supportLines); supportLines.position.set(P.support.cx, 0, -P.support.cy);
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(.22,24,16), new THREE.MeshStandardMaterial({color:0xff3b3b,emissive:0x771111}));
+  const ring = new THREE.Mesh(new THREE.RingGeometry(.18,.3,32), new THREE.MeshBasicMaterial({color:0xff3b3b,side:THREE.DoubleSide}));
+  ring.rotation.x = -Math.PI/2; ring.position.y = .04;
+  const drop = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]), new THREE.LineBasicMaterial({color:0xff3b3b}));
+  comMarker.add(ball, ring, drop); root.add(comMarker);
+  document.getElementById('showCoM').onchange = e => { supportLines.visible = comMarker.visible = e.target.checked; };
+
+  // keyboard / buttons
+  const down = new Set();
+  addEventListener('keydown', e => { if (e.code === 'KeyV' && !e.repeat) toggleCam(); });
+  addEventListener('keydown', e => { if (KEYS[e.code] && !down.has(e.code)){ down.add(e.code); e.preventDefault(); jog(e.code, true);} });
+  addEventListener('keyup',   e => { if (KEYS[e.code]){ down.delete(e.code); jog(e.code, false);} });
+  function jog(code, on){
+    const [j, s] = KEYS[code];
+    if (j === 'drive'){ drive.dir = on ? s : (down.has(s>0?'ArrowDown':'ArrowUp') ? -s : 0); return; }
+    const J = joints[j];
+    if (on){ J.target = s>0 ? J.max : J.min; J.held = s; }
+    else { J.held = 0; const stop = J.pos + J.v*Math.abs(J.v)/(2*J.amax); J.target = clamp(stop, J.min, J.max); }
+    document.getElementById('sl_'+j).value = J.target;
+  }
+  for (const b of document.querySelectorAll('[data-k]')){
+    const s = b.dataset.k === 'drive+' ? 1 : -1;
+    b.addEventListener('pointerdown', () => { drive.dir = s; b.classList.add('on'); });
+    for (const ev of ['pointerup','pointerleave','pointercancel']) b.addEventListener(ev, () => { drive.dir = 0; b.classList.remove('on'); });
+  }
+  document.getElementById('reset').onclick = () => {
+    for (const j in joints){ joints[j].target = P.sheet03[j].init; document.getElementById('sl_'+j).value = joints[j].target; }
+  };
+
+  // cylinders
+  const cyl = Object.entries(P.cylinders).map(([k,c]) => ({node:N['Excavator_Cylinder_'+k], a:N[c.a], b:N[c.b], L:c.L}));
+  const va = new THREE.Vector3(), vb = new THREE.Vector3(), z = new THREE.Vector3(0,0,-1);
+  function updateCylinders(){
+    root.updateMatrixWorld(true);
+    for (const c of cyl){
+      c.a.getWorldPosition(va); c.b.getWorldPosition(vb);
+      root.worldToLocal(va); root.worldToLocal(vb);
+      const d = vb.clone().sub(va), len = d.length();
+      c.node.position.copy(va); c.node.quaternion.setFromUnitVectors(z, d.normalize());
+      c.node.scale.set(1,1,len/c.L);
+    }
+  }
+
+  // physics step: velocity- and acceleration-limited tracking of target (sheet 03)
+  function stepJoint(J, dt){
+    const err = J.target - J.pos, a = J.amax, s = Math.sign(err) || 1;
+    // time-optimal: accelerate toward the target (|a| <= amax, |v| <= vmax) as long as we could still
+    // brake to a stop at the target afterwards; otherwise brake. Evaluated every step (discrete-safe).
+    const vTry = clamp(J.v + s*a*dt, -J.vmax, J.vmax);
+    const stopDist = vTry*Math.abs(vTry)/(2*a) + vTry*dt;   // travel during this step + braking distance
+    let vn;
+    if ((err - stopDist)*s > 0) vn = vTry;                   // room left: speed up / cruise
+    else {                                                   // brake (never reverse by braking)
+      vn = J.v - Math.sign(J.v)*a*dt;
+      if (Math.sign(vn) !== Math.sign(J.v)) vn = 0;
+    }
+    vn = clamp(vn, J.v - a*dt, J.v + a*dt);                  // |dv/dt| <= a, always
+    if (Math.abs(err) < 2*a*dt*dt && Math.abs(J.v) <= a*dt){ J.pos = J.target; J.v = 0; return; }  // settle (dv <= a*dt)
+    J.pos += 0.5*(J.v + vn)*dt;                              // exact for constant acceleration
+    J.v = vn;
+    if (J.pos > J.max + 1e-9){ J.pos = J.max; J.v = Math.min(J.v,0); }   // safety net (target is always inside range)
+    if (J.pos < J.min - 1e-9){ J.pos = J.min; J.v = Math.max(J.v,0); }
+  }
+  function applyPose(){
+    joints.swing.node.rotation.y = deg(joints.swing.pos - P.rest_deg.swing);
+    joints.boom.node.rotation.z  = deg(joints.boom.pos  - P.rest_deg.boom);
+    joints.arm.node.rotation.z   = deg(joints.arm.pos   - P.rest_deg.arm);
+    joints.bucket.node.rotation.z= deg(joints.bucket.pos- P.rest_deg.bucket);
+    root.position.x = drive.pos;
+  }
+
+  const comNodes = {lower:N['CoM_lower'],upper:N['CoM_upper'],boom:N['CoM_boom'],stick:N['CoM_stick'],bucket:N['CoM_bucket']};
+  const tmp = new THREE.Vector3(), com = new THREE.Vector3();
+  const $ = id => document.getElementById(id);
+  // composite CoM in root-local frame (glTF: x front, y up, z right)
+  function comLocal(out){
+    out.set(0,0,0);
+    for (const k in comNodes){ comNodes[k].getWorldPosition(tmp); out.addScaledVector(root.worldToLocal(tmp), MASS[k]); }
+    return out.divideScalar(MTOT);
+  }
+  // world gravity direction (0,-1,0) expressed in root-local frame
+  const qInv = new THREE.Quaternion();
+  function gravLocal(out){ root.getWorldQuaternion(qInv).invert(); return out.set(0,-1,0).applyQuaternion(qInv); }
+  // project c along g onto ground plane (local y=0) and measure distance to support rectangle edges.
+  // equals physics.py cog_projection: p = c - h*tan(theta)*u  (u = uphill dir)
+  function judge(c, g){
+    const t = c.y / g.y, px = c.x - t*g.x, pz = c.z - t*g.z;
+    const m = Math.min(P.support.length/2 - Math.abs(px - P.support.cx), P.support.gauge/2 - Math.abs(pz + P.support.cy));
+    return {px, pz, m};
+  }
+  const gl = new THREE.Vector3(), pLoc = new THREE.Vector3();
+  function updateStability(){
+    root.updateMatrixWorld(true);
+    comLocal(com); gravLocal(gl);
+    const {px, pz, m} = judge(com, gl);
+    pLoc.set(px, 0, pz);
+    comMarker.children[0].position.copy(com); comMarker.children[1].position.set(px,.04,pz);
+    comMarker.children[2].geometry.setFromPoints([com, pLoc]);
+    $('margin').textContent = (m>=0?'+':'') + m.toFixed(2) + ' m';
+    const st = $('status'); const ok = m>0.35, warn = m>0;
+    st.textContent = ok ? '안정' : warn ? '주의' : '전복 위험';
+    st.style.background = ok ? 'var(--ok)' : warn ? 'var(--warn)' : 'var(--bad)';
+    $('margin').style.color = ok ? 'var(--ok)' : warn ? 'var(--warn)' : 'var(--bad)';
+    $('comv').textContent = `x ${com.x.toFixed(2)} · h ${com.y.toFixed(2)} · z ${com.z.toFixed(2)} m`;
+    return m;
+  }
+
+  /* ---------- cameras: 3rd person (orbit) / 1st person (cab, rides Pivot_Swing) ---------- */
+  // [추정] cab eye from upper-structure bounding box: left-front corner, eye height above ground
+  // fromFront < 0: eye just outside the cab front (the modelled cab is a closed box, an inside eye sees only walls)
+  const CAB = {fromFront: -0.15, fromLeft: 0.55, eyeH: 2.8, pitchDeg: -10, fov: 70, near: 0.3};
+  const swingNode = joints.swing.node;
+  const ub = new THREE.Box3(); root.updateMatrixWorld(true);
+  swingNode.traverse(o => { if (!o.isMesh) return; let p = o; while (p && p !== swingNode){ if (p === N['Pivot_Boom']) return; p = p.parent; } ub.expandByObject(o); });
+  const rig = new THREE.Object3D();          // positioned in root frame at setup (swing=0, tilt=0), then attached to swing
+  rig.position.set(ub.max.x - CAB.fromFront, CAB.eyeH, ub.min.z + CAB.fromLeft);   // world == root frame here; left = -z
+  rig.rotation.y = -Math.PI/2;               // camera -z -> machine +x (boom direction)
+  scene.add(rig); swingNode.attach(rig);
+  fpCam = new THREE.PerspectiveCamera(CAB.fov, innerWidth/innerHeight, CAB.near, 400); rig.add(fpCam);
+  const look = {yaw:0, pitch:CAB.pitchDeg};
+  const applyLook = () => fpCam.rotation.set(deg(look.pitch), deg(look.yaw), 0, 'YXZ');
+  applyLook();
+  let dragging = false;
+  renderer.domElement.addEventListener('pointerdown', () => dragging = true);
+  addEventListener('pointerup', () => dragging = false);
+  renderer.domElement.addEventListener('pointermove', e => { if (!fpMode || !dragging) return;
+    look.yaw = clamp(look.yaw - e.movementX*0.2, -100, 100); look.pitch = clamp(look.pitch - e.movementY*0.2, -60, 40); applyLook(); });
+  function toggleCam(){
+    fpMode = !fpMode; controls.enabled = !fpMode;
+    if (!fpMode){ look.yaw = 0; look.pitch = CAB.pitchDeg; applyLook(); }
+    $('camBtn').textContent = fpMode ? '카메라: 1인칭 (V)' : '카메라: 3인칭 (V)';
+    $('camBtn').classList.toggle('on', fpMode);
+  }
+  $('camBtn').onclick = toggleCam;
+  function updateUI(){
+    for (const j of ['boom','arm','bucket','swing']){
+      const J = joints[j];
+      $('v_'+j).innerHTML = `${J.pos.toFixed(1)}°<small>${J.v.toFixed(1)}°/s</small>`;
+    }
+    $('posv').textContent = drive.pos.toFixed(2) + ' m';
+    $('spdv').textContent = (drive.v*3.6).toFixed(2) + ' km/h';
+  }
+
+  function tick(dt){
+    for (const j in joints) stepJoint(joints[j], dt);
+    const vt = drive.dir * P.travel.vmax;
+    drive.v += clamp(vt - drive.v, -P.travel.amax*dt, P.travel.amax*dt);
+    drive.pos += drive.v*dt;
+    applyPose(); updateCylinders(); updateStability(); updateUI();
+  }
+  const clock = new THREE.Clock();
+  (function loop(){
+    requestAnimationFrame(loop);
+    tick(Math.min(clock.getDelta(), 0.05));
+    if (!fpMode) controls.update();
+    renderer.render(scene, fpMode ? fpCam : camera);
+  })();
+  window.__sim = {joints, drive, N, tick, setTilt, camera, controls, slope, toggleCam, CAB, get fpMode(){ return fpMode; }};      // for debugging / tests
+
+  /* ---------- self test: window.__selfTest() ---------- */
+  window.__selfTest = () => {
+    const saved = {...slope}, R = {}, c = new THREE.Vector3(), g = new THREE.Vector3();
+    const hx = P.support.length/2, hz = P.support.gauge/2, h = 1.5;
+    const cen = (y) => new THREE.Vector3(P.support.cx, y, -P.support.cy);
+    const critical = (hd) => {            // bisection on margin of virtual CoM (0,h,0) over support centre
+      let lo = 0, hi = 89;
+      for (let i=0;i<60;i++){ const mid = (lo+hi)/2; setTilt(mid, hd); root.updateMatrixWorld(true);
+        if (judge(cen(h), gravLocal(g)).m < 0) hi = mid; else lo = mid; }
+      return lo;
+    };
+    // (a) slope 0: new judgement == original world-frame judgement
+    setTilt(0, 0); root.updateMatrixWorld(true);
+    const mNew = judge(comLocal(c), gravLocal(g)).m;
+    const w = new THREE.Vector3(); for (const k in comNodes){ comNodes[k].getWorldPosition(tmp); w.addScaledVector(tmp, MASS[k]); } w.divideScalar(MTOT);
+    const cx0 = P.support.cx + root.position.x, cz0 = -P.support.cy;
+    const mOld = Math.min(hx-Math.abs(w.x-cx0), hz-Math.abs(w.z-cz0));
+    R.a_flat_equal = {pass: Math.abs(mNew-mOld) < 1e-9, mNew, mOld};
+    // (b) side slope 90°: critical = atan((B/2)/h)
+    const sideExp = THREE.MathUtils.radToDeg(Math.atan(hz/h)), side = critical(90);
+    R.b_side = {pass: Math.abs(side-sideExp) < 0.1, got: side, expected: sideExp};
+    // (c) front 0°: critical = atan((L/2)/h)
+    const frontExp = THREE.MathUtils.radToDeg(Math.atan(hx/h)), front = critical(0);
+    R.c_front = {pass: Math.abs(front-frontExp) < 0.1, got: front, expected: frontExp};
+    // (e) arbitrary case matches physics.py: p = c - zc*tanθ*(cos hd, sin hd)  [blender y = -glTF z]
+    { const th = 17, hd = 63, cc = new THREE.Vector3(0.4, 1.7, -0.3); setTilt(th, hd); root.updateMatrixWorld(true);
+      const r = judge(cc, gravLocal(g)), t = Math.tan(deg(th));
+      const pxE = cc.x - cc.y*t*Math.cos(deg(hd)), pyE = (-cc.z) - cc.y*t*Math.sin(deg(hd));
+      R.e_physics_py = {pass: Math.abs(r.px-pxE) < 1e-9 && Math.abs(-r.pz-pyE) < 1e-9, px:r.px, py:-r.pz, pxE, pyE}; }
+    // (d) drop line is world-vertical (20° side slope)
+    setTilt(20, 90); updateStability(); comMarker.updateMatrixWorld(true);
+    const pa = comMarker.children[2].geometry.attributes.position;
+    const A = new THREE.Vector3().fromBufferAttribute(pa,0).applyMatrix4(comMarker.matrixWorld);
+    const B = new THREE.Vector3().fromBufferAttribute(pa,1).applyMatrix4(comMarker.matrixWorld);
+    const dir = B.sub(A).normalize();
+    R.d_dropline_vertical = {pass: dir.dot(new THREE.Vector3(0,-1,0)) > 1-1e-9, dir: dir.toArray()};
+    setTilt(saved.deg, saved.head); updateStability();
+    R.allPass = Object.values(R).every(r => r.pass);
+    console.log('[__selfTest]', R.allPass ? 'PASS' : 'FAIL', R);
+    return R;
+  };
+}
+</script>
+</body>
+</html>
