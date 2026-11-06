@@ -5,7 +5,7 @@ AX 챌린지 · AI콘텐츠공학 × 메카트로닉스공학과
 굴착기(CAT 320)가 비탈길이나 경사진 지형에서 움직일 때 넘어질 위험이 얼마나 커지는지 3D 화면으로 미리 확인하는 교육용 웹 시뮬레이터입니다.
 
 **바로 해 보기:** https://kuk97339429-source.github.io/heavy-equipment-rollover/
-(QR: `presentation/images/qr_simulator.png`)
+(QR: `presentation/images/qr_simulator.png` — 안전교육 시작 화면 `web/home.html`이 열리고, "학습 시작"으로 시뮬레이터, "진단 테스트"로 테스트에 들어갑니다)
 
 > 2일 동안 만든 학습·시연용 근사 모델입니다. 지반 붕괴·침하, 미끄러짐 등은 반영하지 않으므로 실제 현장 안전 판단에 단독으로 쓰면 안 됩니다.
 
