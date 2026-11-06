@@ -85,6 +85,9 @@ CAT은 "이 거리에서 이만큼까지 들 수 있다"는 표를 공개해요.
 2. 달리다 멈추거나 돌 때 생기는 힘(관성)도 넣을까?
 3. AI 문장 만들기 기능 넣을까? (API 키 필요)
 
+■ 시뮬레이터 바로 해보기 (설치 필요 없음, PC 브라우저 추천)
+https://kuk97339429-source.github.io/heavy-equipment-rollover/
+
 ■ 자세한 자료
 바뀐 점 정리: https://github.com/kuk97339429-source/heavy-equipment-rollover/blob/main/docs/CHANGES.md
 전체 기획서: https://github.com/kuk97339429-source/heavy-equipment-rollover/blob/main/docs/PLAN.md
