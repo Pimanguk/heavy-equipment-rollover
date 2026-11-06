@@ -81,7 +81,7 @@ def scene(eq, load, reach, load_h, swing_deg, slope_deg, heading_deg, tipping):
 
 if __name__ == "__main__":
     from physics import EQUIPMENT
-    eq = EQUIPMENT["굴착기 20t급"]
+    eq = EQUIPMENT["CAT 320 (굴착기 20t급)"]
     for slope, hd in [(0, 0), (20, 90), (30, 45), (25, 180)]:
         R = slope_rotation(slope, hd)
         assert np.allclose(R @ R.T, np.eye(3))
