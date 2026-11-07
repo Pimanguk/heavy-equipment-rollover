@@ -1,4 +1,4 @@
-"""CAT 320 excavator: Excavator.blend + spreadsheet tabs 01 / 02 / 03  ->  .blend, .glb (web), params.
+﻿"""CAT 320 excavator: Excavator.blend + spreadsheet tabs 01 / 02 / 03  ->  .blend, .glb (web), params.
 
 Usage (Blender 4.x / 5.x):
   blender -b download/Excavator.blend --python build_excavator_final.py -- <out_dir> [--render]
@@ -85,12 +85,33 @@ CG_STAGE = _os.environ.get("CG_STAGE", "full")        # old = sheet values | upp
 if CG_STAGE in ("upper", "full"):
     SHEET09["upper"]["cg"] = (-0.85, 0.0, 1.15)
 if CG_STAGE == "full":
-    SHEET09["upper"]["cg"] = (-0.85, 0.10, 1.15)
-    SHEET09["boom"]["cg"] = (2.68, -0.81, 0.32)
-    SHEET09["stick"]["cg"] = (1.23, -0.81, -0.06)
-    SHEET09["bucket"]["cg"] = (0.11, -0.81, -0.76)
-    PAYLOAD["cg"] = (-0.11, -0.81, -0.81)
-print("CG_STAGE", CG_STAGE)
+    SHEET09["upper"]["cg"] = (-1.50, 0.10, 1.15)       # user request: upper CoM moved back (-0.85 -> -1.50) to the top edge of the black block behind the swing axis
+    # boom/stick/bucket/payload sit on the boom centre line y = -0.40 (just right of the cab, see BOOM_Y)
+    SHEET09["boom"]["cg"] = (2.68, -0.40, 0.32)
+    SHEET09["stick"]["cg"] = (1.23, -0.40, -0.06)
+    SHEET09["bucket"]["cg"] = (0.11, -0.40, -0.76)
+    PAYLOAD["cg"] = (-0.11, -0.40, -0.81)
+# --- comparison variants (env CG_VARIANT), both with the upper-body CoM moved back by a further 0.25 m (-1.50 -> -1.75):
+#   A = combined CoM kept: lower / boom / stick / bucket / payload CoMs are moved FORWARD by the same world-X amount so that the
+#       total CoM X (initial pose boom 39, arm -18) stays where it was:  dx = 12300 * 0.25 / (4000+3300+1800+1200) = 0.2985 m
+#   B = lower undercarriage CoM moves back together with the upper body (X 0 -> -0.25); boom/stick/bucket stay on the mesh
+CG_VARIANT = _os.environ.get("CG_VARIANT", "A")
+if CG_VARIANT in ("A", "B"):
+    SHEET09["upper"]["cg"] = (-1.75, 0.10, 1.15)
+if CG_VARIANT == "A":
+    _dx = 12300 * 0.25 / (4000 + 3300 + 1800 + 1200)
+    _PHI = {"boom": 39.0, "stick": -49.0, "bucket": -49.0}     # absolute link angles at the initial pose (deg), checked against the viewer's CG X values (bucket frame = stick frame)
+    def _fwd(cg, phi):   # world +X shift _dx expressed in the link's own frame (x along bar, z perpendicular)
+        p = math.radians(phi); return (cg[0] + _dx * math.cos(p), cg[1], cg[2] - _dx * math.sin(p))
+    SHEET09["lower"]["cg"] = (SHEET09["lower"]["cg"][0] + _dx, 0.0, SHEET09["lower"]["cg"][2])
+    SHEET09["boom"]["cg"] = _fwd(SHEET09["boom"]["cg"], _PHI["boom"])
+    SHEET09["stick"]["cg"] = _fwd(SHEET09["stick"]["cg"], _PHI["stick"])
+    SHEET09["bucket"]["cg"] = _fwd(SHEET09["bucket"]["cg"], _PHI["bucket"])
+    PAYLOAD["cg"] = _fwd(PAYLOAD["cg"], _PHI["bucket"])
+    print("VARIANT A dx", round(_dx, 4), {k: tuple(round(x, 3) for x in SHEET09[k]["cg"]) for k in ("lower", "boom", "stick", "bucket")})
+if CG_VARIANT == "B":
+    SHEET09["lower"]["cg"] = (-0.25, 0.0, SHEET09["lower"]["cg"][2])
+print("CG_STAGE", CG_STAGE, "VARIANT", CG_VARIANT)
 
 # =====================  READ ORIGINAL MODEL (world space)  =====================
 D = bpy.data.objects
@@ -172,7 +193,12 @@ LOWER_SHIFT = -np.array([(_trc.max(0)[0] + _trc.min(0)[0]) / 2, (_trc.max(0)[1] 
 def G_lower(P): return np.array([S0[0], S0[1], 0]) + (P - S0) * np.array([sx_l, sy_l, sz_l]) + LOWER_SHIFT
 def G_upper(P): return np.array([S0[0], S0[1], Z_UP]) + (P - np.array([S0[0], S0[1], Z_RING])) * su
 _b_vis = G_upper(B0)                                                 # where the boom foot pin would sit on the scaled body
-B1 = np.array([SHEET09["boom"]["hinge"][0], _b_vis[1], Z_UP + SHEET09["boom"]["hinge"][2]])  # boom hinge from sheet 09 (X, Z); keep body Y
+_ba = np.concatenate(boom_arrs)
+BOOM_Y = -0.40       # lateral position of the boom/stick/bucket centre line (m, +Y = left). The cab fills y 0..+1.33 above z 3 m, so the line sits just right of the
+                     # cab edge (like a real CAT 320: boom beside the cab, near the middle of the front); y = 0 would push the boom through the cab.
+_boom_cy = BOOM_Y - sw_b * (((_ba[:, 1].max() + _ba[:, 1].min()) / 2) - B0[1])   # hinge y such that the boom's width centre lands on BOOM_Y (the mesh is not centred on its hinge pin)
+B1 = np.array([SHEET09["boom"]["hinge"][0], _boom_cy, Z_UP + SHEET09["boom"]["hinge"][2]])  # boom hinge from sheet 09 (X, Z); Y chosen so boom/stick/bucket sit on the machine centre plane
+BOOM_DY = float(_boom_cy - _b_vis[1])                                # lateral shift of boom/stick/bucket vs. the original one-sided layout
 INT_OFF = np.array([-S0_orig[0], -S0_orig[1], Z_UP - 0.9])           # cab interior was laid out in the earlier frame
 def G_boom(P): return B1 + (P - B0) @ A_b.T
 E1 = G_boom(E0)
@@ -241,7 +267,9 @@ for grp, names in PINS.items():                  # pins: move with group, keep r
         c0 = ctr(n); c1 = GROUPS[grp](c0)
         NEW[N(n)] = c1 + (W[N(n)] - c0) * np.array([PIN_SCALE, SW[grp], PIN_SCALE])
 # boom-foot pin cap (Axle_02) stays on the body but the boom hinge was raised to the sheet-09 height -> follow the hinge
-NEW[N("Axle_02")] = NEW[N("Axle_02")] + np.array([B1[0] - _b_vis[0], 0.0, B1[2] - _b_vis[2]])
+NEW[N("Axle_02")] = NEW[N("Axle_02")] + np.array([B1[0] - _b_vis[0], BOOM_DY, B1[2] - _b_vis[2]])
+NEW[N("Axle_01")] = NEW[N("Axle_01")] + np.array([0.0, BOOM_DY, 0.0])       # lift-cylinder foot pin follows the boom to the centre plane
+print("boom lateral shift to centre plane:", round(BOOM_DY, 3), "m")
 # boom-foot pin (Axle_02) was only a thin cap on the outside of the body: make it a real pin that runs from the body's outer
 # face through the boom foot (so boom and body are visibly joined by it).
 _p2 = NEW[N("Axle_02")]
@@ -280,6 +308,7 @@ CYL["Cylinder_03"] = (c3v, ("stick", e3), ("bucket", ctr("Axle_09")))     # rod 
 cyl_info = {}
 for n, ((V, c, ax, t, _, _), (ga, pa), (gb, pb)) in CYL.items():
     A1, B1c = GROUPS[ga](pa), GROUPS[gb](pb)
+    if n == "Cylinder_01": A1 = A1 + np.array([0.0, BOOM_DY, 0.0])       # body-side anchor on the shifted pin (Axle_01)
     L1 = float(np.linalg.norm(B1c - A1)); w = (B1c - A1) / L1
     e1 = np.cross(w, [0, 1.0, 0]); e1 = e1 / np.linalg.norm(e1) if np.linalg.norm(e1) > 1e-3 else np.cross(w, [1.0, 0, 0])
     e1 /= np.linalg.norm(e1); e2v = np.cross(w, e1)
@@ -654,3 +683,4 @@ with open(f"{OUT}/web/model_data.js", "w", encoding="utf-8") as f:
     f.write("window.EXCAVATOR_GLB_3RD_BASE64=\"" + b64f(glb3) + "\";\n")
     f.write("window.EXCAVATOR_GLB_1ST_BASE64=\"" + b64f(glb1) + "\";\n")
 print("WEB OK", os.path.getsize(glb3), os.path.getsize(glb1), "bytes (3rd / 1st person glb)")
+
