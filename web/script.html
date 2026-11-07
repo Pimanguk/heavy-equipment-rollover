@@ -21,6 +21,8 @@
   p { margin:6px 0; }
   em { font-style:normal; color:#ffd666; font-weight:700; }
   .note { font-size:15px; color:var(--dim); }
+  #bar { position:sticky; top:58px; z-index:8; background:#3a2d00; color:#ffe9a8; font-size:14px; padding:8px 12px; }
+  body.editing main p, body.editing main h2 { outline:1px dashed #f5b400; outline-offset:3px; border-radius:4px; }
   details { background:var(--card); border-radius:14px; padding:10px 16px; margin:12px 0; font-size:17px; }
   summary { color:var(--acc); font-weight:700; }
 </style>
@@ -31,7 +33,9 @@
   <span id="clock">0:00</span>
   <button id="go">시작</button>
   <button id="sz">글자</button>
+  <button id="ed">편집</button>
 </header>
+<div id="bar" hidden>편집 중: 글자를 눌러 고치세요. 자동 저장(이 기기에만). <button id="cp">전체 복사</button> <button id="rs">원래대로</button></div>
 <main>
 
 <section><h2>1 · 표지 <span>4초 · 0:04</span></h2>
@@ -79,6 +83,22 @@ $('go').onclick = () => {
 $('clock').onclick = () => { acc = 0; t0 = Date.now(); if (!run) $('go').textContent = '시작'; };
 $('sz').onclick = () => document.body.classList.toggle('big');
 document.addEventListener('visibilitychange', () => { if (run && document.visibilityState === 'visible') keepAwake(); });
+// 편집: 문장을 직접 고치면 이 기기 브라우저에 자동 저장된다(다른 기기와 동기화되지 않음).
+const KEY = 'script-short-v1', main = document.querySelector('main'), ORIG = main.innerHTML;
+const saved = localStorage.getItem(KEY); if (saved) main.innerHTML = saved;
+const editables = () => main.querySelectorAll('p, h2');
+$('ed').onclick = () => {
+  const on = document.body.classList.toggle('editing');
+  editables().forEach(el => el.contentEditable = on);
+  $('bar').hidden = !on; $('ed').textContent = on ? '완료' : '편집';
+  if (on) main.querySelector('details')?.setAttribute('open', '');
+};
+main.addEventListener('input', () => localStorage.setItem(KEY, main.innerHTML));
+$('cp').onclick = async () => {
+  const txt = [...main.querySelectorAll('section, details')].map(s => s.innerText.trim()).join(String.fromCharCode(10,10));
+  try { await navigator.clipboard.writeText(txt); alert('복사했습니다. 카톡 등에 붙여 넣으세요.'); } catch (e) { prompt('아래 글을 길게 눌러 복사하세요', txt); }
+};
+$('rs').onclick = () => { if (confirm('고친 내용을 지우고 원래 대본으로 돌릴까요?')) { localStorage.removeItem(KEY); main.innerHTML = ORIG; editables().forEach(el => el.contentEditable = true); } };
 </script>
 </body>
 </html>
