@@ -27,43 +27,33 @@
 </head>
 <body>
 <header>
-  <b>1부 대본 · 1~7페이지 · 2분</b>
+  <b>1부 대본 · 1~7페이지 · 1분</b>
   <span id="clock">0:00</span>
   <button id="go">시작</button>
   <button id="sz">글자</button>
 </header>
 <main>
 
-<section><h2>1 · 표지 <span>8초 · 0:08</span></h2>
-<p>안녕하세요. 굴착기 전복 예방 시뮬레이터를 만든 AI콘텐츠공학과, 메카트로닉스공학과 <em>8조</em>입니다.</p></section>
+<section><h2>1 · 표지 <span>4초 · 0:04</span></h2>
+<p>안녕하세요. 굴착기 전복 예방 시뮬레이터를 만든 8조입니다.</p></section>
 
-<section><h2>2 · 목차 <span>7초 · 0:15</span></h2>
-<p>왜 만들었는지, 어떻게 판단하는지 먼저 설명드리고 이어서 실제 시연을 보여 드리겠습니다.</p></section>
+<section><h2>2 · 목차 <span>5초 · 0:09</span></h2>
+<p>만든 이유와 판단 방법을 먼저 말씀드리고 시연을 보여 드리겠습니다.</p></section>
 
-<section><h2>3 · 주제 선정 이유 <span>27초 · 0:42</span></h2>
-<p>흔히 포크레인이라고 부르는 굴착기는 건설 현장에서 <em>사망 사고가 가장 많은 장비</em>입니다.</p>
-<p>고용노동부 분석을 인용한 <em>서울경제 보도</em>에 따르면 2016년부터 5년 동안 <em>104명</em>이 숨졌습니다. 한 해에 스무 명꼴입니다.</p>
-<p>특히 비탈에서 일하거나 팔을 높이 들거나 길게 뻗으면 넘어지기 쉽고 이런 조건이 겹치면 더 위험합니다.</p>
-<p>하지만 진짜 굴착기를 넘어뜨려 보며 배울 수는 없습니다. 그래서 <em>화면 속에서 안전하게 넘어뜨려 보는</em> 교육용 시뮬레이터를 만들었습니다.</p></section>
+<section><h2>3 · 주제 선정 이유 <span>16초 · 0:25</span></h2>
+<p>굴착기는 건설 현장에서 사망 사고가 가장 많은 장비입니다. 고용노동부 분석을 인용한 서울경제 보도에 따르면 5년 동안 104명이 숨졌습니다.</p><p>진짜로 넘어뜨려 볼 수는 없으니, 화면에서 안전하게 체험하는 시뮬레이터를 만들었습니다.</p></section>
 
-<section><h2>4 · AI툴 소개 <span>12초 · 0:54</span></h2>
-<p>3D 모델은 Blender로 만들었고 자료 조사와 코드 작성에는 Gemini, ChatGPT, Claude를 썼습니다.</p>
-<p>다만 넘어질지 말지는 AI가 짐작하지 않고 <em>물리 공식으로 계산</em>합니다.</p>
-<p class="note">시간 부족하면: "AI는 만드는 데 쓰고, 판정은 물리 공식으로 합니다."</p></section>
+<section><h2>4 · AI툴 소개 <span>7초 · 0:32</span></h2>
+<p>3D 모델은 Blender로, 개발은 AI 도구와 함께했고 넘어질지는 물리 공식으로 계산합니다.</p></section>
 
-<section><h2>5 · 5단 관절 구조 <span>30초 · 1:24</span></h2>
-<p>기준 장비는 <em>CAT 320</em>입니다. 현장에서 흔히 쓰는 <em>20톤급 대표 기종</em>이고 무게와 치수가 공식 자료로 공개돼 있어서 시뮬레이션의 표준으로 삼았습니다.</p>
-<p>이 굴착기를 다섯 부분으로 나눴습니다. 땅을 밟고 움직이는 <em>하부 주행체</em>, 운전석과 엔진이 있는 <em>회전몸체</em>, 큰 팔인 <em>붐</em>, 작은 팔인 <em>암</em>, 그리고 흙을 담는 <em>버킷</em>입니다.</p>
-<p>부분마다 무게중심을 따로 계산하기 때문에 팔을 움직이면 전체 무게중심이 어디로 가는지 바로 보입니다.</p></section>
+<section><h2>5 · 5단 관절 구조 <span>12초 · 0:44</span></h2>
+<p>기준 장비는 공식 제원이 공개된 20톤급 대표 기종 CAT 320입니다. 하부 주행체, 회전몸체, 붐, 암, 버킷 다섯 부분의 무게중심을 따로 계산합니다.</p></section>
 
-<section><h2>6 · 위험 단계 표시 방법 <span>25초 · 1:49</span></h2>
-<p>판단 방법은 간단합니다. 위에서 내려다보면 트랙이 장비를 <em>받치는 영역</em>이 있고, 장비 <em>무게가 실리는 점</em>이 있습니다.</p>
-<p>이 점이 영역 안쪽 깊숙이 있으면 <em>안전</em>, 가장자리에 가까워지면 <em>주의</em>, 영역 밖으로 나가면 <em>넘어집니다</em>.</p>
-<p>달리다 급하게 멈출 때 생기는 힘도 이 점에 함께 반영합니다.</p></section>
+<section><h2>6 · 위험 단계 표시 방법 <span>9초 · 0:53</span></h2>
+<p>무게가 실리는 점이 트랙이 받치는 영역 안쪽이면 안전, 가장자리면 주의, 밖으로 나가면 전복입니다.</p></section>
 
-<section><h2>7 · 위험도 실시간 표시 <span>11초 · 2:00</span></h2>
-<p>경사, 팔 자세, 짐 무게, 주행 속도를 바꾸면 그 즉시 위험 단계가 색깔로 바뀝니다.</p>
-<p>실제로 어떻게 달라지는지 <em>○○○ 팀원</em>이 이어서 보여 드리겠습니다.</p></section>
+<section><h2>7 · 위험도 실시간 표시 <span>6초 · 0:59</span></h2>
+<p>경사와 자세, 짐 무게를 바꾸면 결과가 바로 바뀝니다. 이어서 시연을 보여 드리겠습니다.</p></section>
 
 <details><summary>Q&amp;A 빠른 답변</summary>
 <p><b>실제 장비로 검증?</b> 실측은 아직. CAT 인양 능력표(ISO 10567, 전복 하중의 75%)와 비교하는 방식으로 확인할 계획.</p>
@@ -81,7 +71,7 @@
 let t0 = 0, acc = 0, run = false;
 const $ = id => document.getElementById(id), fmt = s => Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
 const keepAwake = async () => { try { await navigator.wakeLock?.request('screen'); } catch (e) {} };
-setInterval(() => { const s = (acc + (run ? Date.now() - t0 : 0)) / 1000; $('clock').textContent = fmt(s); $('clock').style.color = s > 120 ? '#ff5a4e' : ''; }, 250);
+setInterval(() => { const s = (acc + (run ? Date.now() - t0 : 0)) / 1000; $('clock').textContent = fmt(s); $('clock').style.color = s > 60 ? '#ff5a4e' : ''; }, 250);
 $('go').onclick = () => {
   if (run) { acc += Date.now() - t0; run = false; $('go').textContent = '계속'; }
   else { t0 = Date.now(); run = true; $('go').textContent = '정지'; keepAwake(); }
