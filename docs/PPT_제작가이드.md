@@ -58,7 +58,7 @@
 
 | 항목 | 상태 |
 |---|---|
-| QR 주소 | `https://kuk97339429-source.github.io/heavy-equipment-rollover/` — 판독 확인 완료 |
+| QR 주소 | `https://pimanguk.github.io/heavy-equipment-rollover/` — 판독 확인 완료 |
 | QR이 여는 화면 | 안전교육 시작 화면(`web/home.html`) → "학습 시작"으로 시뮬레이터(찐 최종), "진단 테스트"로 5문항 테스트 |
 | 부품 질량 | 최종 시뮬레이터는 팀 시트 질량(버킷 1,200 / 암 1,800 / 붐 3,300 / 회전몸체 12,300 / 하부 4,000 kg) 사용. 사진·영상 수치도 이 기준 |
 | 위험 단계 기준 0.35 m | 임시값 — 발표 때 그렇게 말할 것 |
